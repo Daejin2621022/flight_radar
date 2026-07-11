@@ -29,23 +29,36 @@ z_threshold = st.sidebar.slider(
 )
 
 # -----------------------------------------------------------
-# 2. 데이터 수집 (OpenSky API)
+# 2. 데이터 수집 (OpenSky API) - 수정된 버전
 # -----------------------------------------------------------
+
+# 🚨 여기에 본인의 OpenSky 아이디와 비밀번호를 다시 입력하세요!
+USERNAME = "daejin2621022-api-client"
+PASSWORD = "YGDWJqIvskDeOUyNsHnvyjxkaJwAlL9o"
+
 def get_flight_data():
     url = "https://opensky-network.org/api/states/all"
     params = {"lamin": 33.0, "lamax": 39.0, "lomin": 124.0, "lomax": 132.0}
     try:
-        response = requests.get(url, params=params, timeout=10)
+        # 변경점 1: timeout을 10초에서 30초로 늘렸습니다.
+        # 변경점 2: auth=(USERNAME, PASSWORD)를 추가해서 정식으로 데이터를 요청합니다.
+        response = requests.get(url, params=params, auth=(USERNAME, PASSWORD), timeout=30)
+        
+        response.raise_for_status() # 에러가 발생하면 즉시 예외 처리로 넘깁니다.
         data = response.json()
+        
         if data is not None and data.get("states") is not None:
             return data["states"]
+        return []
+        
+    except requests.exceptions.Timeout:
+        st.error("서버 응답 지연: OpenSky 서버가 30초 동안 응답하지 않습니다. 잠시 후 새로고침을 눌러주세요.")
         return []
     except Exception as e:
         st.error(f"데이터를 가져오는 중 오류가 발생했습니다: {e}")
         return []
 
 raw_data = get_flight_data()
-
 # -----------------------------------------------------------
 # 3. 데이터 전처리 및 Z-score 계산 (Pandas)
 # -----------------------------------------------------------
