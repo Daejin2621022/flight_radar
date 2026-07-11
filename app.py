@@ -29,16 +29,32 @@ z_threshold = st.sidebar.slider(
 )
 
 # -----------------------------------------------------------
-# 2. 데이터 수집 (OpenSky API)
+# 2. 데이터 수집 (OpenSky API) - 30초 대기 & 시크릿 인증 적용
 # -----------------------------------------------------------
 def get_flight_data():
     url = "https://opensky-network.org/api/states/all"
     params = {"lamin": 33.0, "lamax": 39.0, "lomin": 124.0, "lomax": 132.0}
+    
     try:
-        response = requests.get(url, params=params, timeout=10)
+        # Streamlit 클라우드 금고에서 아이디와 비밀번호 꺼내오기
+        USERNAME = st.secrets["opensky"]["username"]
+        PASSWORD = st.secrets["opensky"]["password"]
+        
+        # timeout을 30으로 늘리고, auth=(USERNAME, PASSWORD)를 추가!
+        response = requests.get(url, params=params, auth=(USERNAME, PASSWORD), timeout=30)
+        
+        response.raise_for_status() 
         data = response.json()
+        
         if data is not None and data.get("states") is not None:
             return data["states"]
+        return []
+        
+    except requests.exceptions.Timeout:
+        st.error("서버 응답 지연: OpenSky 서버가 30초 동안 응답하지 않습니다. (클라우드 IP 차단 가능성 있음)")
+        return []
+    except KeyError:
+        st.error("🚨 Streamlit Settings -> Secrets에 아이디와 비밀번호가 설정되지 않았습니다!")
         return []
     except Exception as e:
         st.error(f"데이터를 가져오는 중 오류가 발생했습니다: {e}")
