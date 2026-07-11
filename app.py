@@ -6,7 +6,7 @@ import numpy as np
 
 st.set_page_config(page_title="한반도 실시간 비행기 추적", layout="wide")
 
-st.title("✈️ 한반도 상공 실시간 비행기 이상 탐지 웹앱")
+st.title("21022 조시훈의 ✈️ 한반도 상공 실시간 비행기 이상 탐지 웹앱")
 st.write("OpenSky API 데이터에 Z-score 통계 기법을 적용하여 급강하 중인 비행기를 자동으로 감지합니다.")
 
 # -----------------------------------------------------------
